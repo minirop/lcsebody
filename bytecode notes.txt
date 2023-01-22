@@ -1,0 +1,35 @@
+number of opcodes (each opcode is 12 bytes)
+unknown 4b
+opcodes (count * 12)
+strings (4b length counting the '\0' then 0-terminated string)
+name "dialogue" are separated by 0x01
+
+11 00 00 00 02 00 00 00 XX XX XX XX: push string who is XX XX XX XX bytes from the start of the strings
+0D 00 00 00 0B 00 00 00 00 00 00 00: execute script it seems
+0C 00 00 00 00 00 00 00 00 00 00 00: pop? (always following execute script or other opcodes)
+08 00 00 00 00 00 00 00 XX XX XX XX: unconditional jump? XX = <target>
+0A 00 00 00 00 00 00 00 XX XX XX XX: conditional jump? XX = <target>
+0F 00 00 00 XX XX XX XX YY YY YY YY: unknown
+0E 00 00 00 00 00 00 00 00 00 00 00: return?
+00 00 00 00 00 00 00 00 00 00 00 00: EOF/EOS?
+0D 00 00 00 12 00 00 00 00 00 00 00: set character layer?
+0D 00 00 00 2C 00 00 00 00 00 00 00: save read lines? (2 ints on stack)
+0F 00 00 00 XX 00 00 00 06 00 00 00: seems to be "set character horizontal pos"
+0x0d 0x3a 0
+
+0x11 is "push <type> <value>"
+- 0x00 int
+- 0x01 bool
+- 0x02 string
+
+0x0D is maybe "store/set"???
+- 0x0B execute script
+- 0x12 set charater layer?
+- 0x23 preceded by 3 "push_int" (200 or 255) so colour? which? text?
+- 0x24 preceded by 3 "push_int" (0 or 120) so colour? which? background?
+- 0x25 preceded by 2 "push_int" (0 then 1)
+- 0x3A set button UI (used for dialogue box)
+- 0x4F seems to be choices (choices followed by an int 4 = 2 choices, 5 = 3 choices)
+
+0x07 is CMP? (checking stack top?)
+0x0A conditional jump if true?
