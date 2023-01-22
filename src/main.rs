@@ -59,18 +59,41 @@ fn main() -> Result<()> {
         let arg1 = f.read_u32::<LittleEndian>()?;
         let arg2 = f.read_u32::<LittleEndian>()?;
 
-        if opcode == 0x11 {
-            print!("push");
-            match arg1 {
-                0x00 => println!("_int {}", arg2),
-                0x01 => println!("_bool {}", if arg2 == 1 { "true" } else { "false" }),
-                0x02 => println!("_string {:?}", strings[&(arg2 as u64)]),
-                _ => panic!("unknown push: {:?}", arg1),
-            };
-            set.insert(arg2);
-        } else {
-            println!("{:#04x} {:#04x} {:?}", opcode, arg1, arg2);
-        }
+        print!("{:#04x} {:#04x} {:#04x}: ", opcode, arg1, arg2);
+        match opcode {
+            0x01 => println!("add"),
+            0x02 => println!("sub"),
+            0x03 => println!("mul"),
+            0x04 => println!("div"),
+            0x05 => println!("mod"),
+            0x06 => println!("neg"),
+            0x07 => {
+                match arg1 {
+                    0x00 => println!("EQ"),
+                    0x01 => println!("NE"),
+                    0x02 => println!("LT"),
+                    0x03 => println!("LE"),
+                    0x04 => println!("GT"),
+                    0x05 => println!("GE"),
+                    _ => panic!("Unknown CMP arg: {}", arg1),
+                };
+            },
+            0x08 => println!("jump to {:?}", arg2),
+            0x0A => println!("jump if true to {:?}", arg2),
+            0x0C => println!("pop"),
+            0x0D => println!("push_int {}, return 2", arg1),
+            0x11 => {
+                print!("push");
+                match arg1 {
+                    0x00 => println!("_int {}", arg2),
+                    0x01 => println!("_bool {}", if arg2 == 1 { "true" } else { "false" }),
+                    0x02 => println!("_string {:?}", strings[&(arg2 as u64)]),
+                    _ => panic!("unknown push: {:?}", arg1),
+                };
+                set.insert(arg2);
+            },
+            _ => println!("unknown"),
+        };
     }
 
     Ok(())

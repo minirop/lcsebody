@@ -1,35 +1,68 @@
 number of opcodes (each opcode is 12 bytes)
 unknown 4b
-opcodes (count * 12)
+opcodes (count * 12): opcode arg1 arg2
 strings (4b length counting the '\0' then 0-terminated string)
 name "dialogue" are separated by 0x01
 
-11 00 00 00 02 00 00 00 XX XX XX XX: push string who is XX XX XX XX bytes from the start of the strings
-0D 00 00 00 0B 00 00 00 00 00 00 00: execute script it seems
-0C 00 00 00 00 00 00 00 00 00 00 00: pop? (always following execute script or other opcodes)
-08 00 00 00 00 00 00 00 XX XX XX XX: unconditional jump? XX = <target>
-0A 00 00 00 00 00 00 00 XX XX XX XX: conditional jump? XX = <target>
-0F 00 00 00 XX XX XX XX YY YY YY YY: unknown
-0E 00 00 00 00 00 00 00 00 00 00 00: return?
-00 00 00 00 00 00 00 00 00 00 00 00: EOF/EOS?
-0D 00 00 00 12 00 00 00 00 00 00 00: set character layer?
-0D 00 00 00 2C 00 00 00 00 00 00 00: save read lines? (2 ints on stack)
-0F 00 00 00 XX 00 00 00 06 00 00 00: seems to be "set character horizontal pos"
-0x0d 0x3a 0
+function executing opcodes: FUN_004110c0
+
+opcodes:
+- 0x00 return 1
+- 0x01 add 2 ints (stack)
+- 0x02 sub 2 ints (stack)
+- 0x03 mul 2 ints (stack)
+- 0x04 div 2 ints (stack)
+- 0x05 mod 2 ints (stack)
+- 0x06 neg int (stack)
+- 0x07 cmp
+- 0x08 ???
+- 0x09 ???
+- 0x0a ???
+- 0x0b ???
+- 0x0c pop stack
+- 0x0d push arg1 (of type int) then returns 2
+- 0x0e ???
+- 0x0f ???
+- 0x10 ???
+- 0x11 push literal
+- 0x12 ???
+- 0x13 ???
+- 0x14 ???
+- 0x15 ???
+- 0x17 ???
 
 0x11 is "push <type> <value>"
 - 0x00 int
 - 0x01 bool
 - 0x02 string
 
-0x0D is maybe "store/set"???
+0x0D seems to be "push_int" then execute action based on it. (since it returns 2 instead of continuing executing like 0x11)
 - 0x0B execute script
 - 0x12 set charater layer?
 - 0x23 preceded by 3 "push_int" (200 or 255) so colour? which? text?
 - 0x24 preceded by 3 "push_int" (0 or 120) so colour? which? background?
 - 0x25 preceded by 2 "push_int" (0 then 1)
+- 0x2C set line as read
 - 0x3A set button UI (used for dialogue box)
-- 0x4F seems to be choices (choices followed by an int 4 = 2 choices, 5 = 3 choices)
+- 0x4F seems to be choices (choices followed by an int: 4 = 2 choices, 5 = 3 choices)
 
-0x07 is CMP? (checking stack top?)
-0x0A conditional jump if true?
+0x07 is CMP:
+- 0x00: EQ
+- 0x01: NE
+- 0x02: LT
+- 0x03: LE
+- 0x04: GT
+- 0x05: GE
+
+0x10:
+switch is based on arg2:
+- 0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c: push on top of the stack the value arg1 with a new type.
+- 0x01, 0x03, 0x05, 0x07, 0x09, 0x0b, 0x0d: replace stack and adding arg1 to the top of the stack.
+types are from 3 to 9. (i.e. "unknown")
+
+runtime:
+param_1/this + 0x2948 = bytecode index
+param_1/this + 0x2940 + X * 0x0C = bytecode[X]
+
+param_1/this + 0x1830 = stack index
+param_1/this + 0x30 + X * 8 = stack[X] (each value on the stack are a pair of int32, first one seems to be "type", second is the value)
