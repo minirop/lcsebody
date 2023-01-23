@@ -15,21 +15,21 @@ opcodes:
 - 0x05 mod 2 ints (stack)
 - 0x06 neg int (stack)
 - 0x07 cmp
-- 0x08 ???
-- 0x09 ???
-- 0x0a ???
+- 0x08 unconditional jump
+- 0x09 conditional jump if false (if (stack_top != 0) { if (arg1 != 0) push_bool(true) } else jump_to(arg2))
+- 0x0a conditional jump if true (if (stack_top != 0) jump_to(arg2) else if arg1 != 0 push_bool(true))
 - 0x0b ???
 - 0x0c pop stack
 - 0x0d push arg1 (of type int) then returns 2
-- 0x0e ???
+- 0x0e return 4
 - 0x0f ???
 - 0x10 ???
 - 0x11 push literal
 - 0x12 ???
 - 0x13 ???
-- 0x14 ???
-- 0x15 ???
-- 0x17 ???
+- 0x14 do nothing?
+- 0x15 do nothing?
+- 0x17 push arg1 (of type int) then returns 3
 
 0x11 is "push <type> <value>"
 - 0x00 int
@@ -60,9 +60,19 @@ switch is based on arg2:
 - 0x01, 0x03, 0x05, 0x07, 0x09, 0x0b, 0x0d: replace stack and adding arg1 to the top of the stack.
 types are from 3 to 9. (i.e. "unknown")
 
+0x09 && 0x0a:
+- why is there a "push_bool" in the "else" case? push the value that has been read/popped?
+
+0x0b: pops 2 values from the stack then push_int(1)
+- 0x03: 0x296c[2nd] = 1st
+- 0x04: 0x2970[2nd] = 1st == 1
+- 0x05: ???
+- 0x09: 0x2984[2nd] = 1st
+
 runtime:
 param_1/this + 0x2948 = bytecode index
 param_1/this + 0x2940 + X * 0x0C = bytecode[X]
+param_1/this + 0x2938 = bytecode size
 
 param_1/this + 0x1830 = stack index
 param_1/this + 0x30 + X * 8 = stack[X] (each value on the stack are a pair of int32, first one seems to be "type", second is the value)
