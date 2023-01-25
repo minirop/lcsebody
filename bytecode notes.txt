@@ -63,11 +63,83 @@ types are from 3 to 9. (i.e. "unknown")
 0x09 && 0x0a:
 - why is there a "push_bool" in the "else" case? push the value that has been read/popped?
 
-0x0b: pops 2 values from the stack then push_int(1)
+0x0b: pops 2 values from the stack, set a variable then push_int(1)
 - 0x03: 0x296c[2nd] = 1st
 - 0x04: 0x2970[2nd] = 1st == 1
 - 0x05: ???
 - 0x09: 0x2984[2nd] = 1st
+
+0x0f: switch (arg2)
+- 0x00: get_296c(arg1). i.e. push_int(0x296c[arg1]); // variable (used in __MAINSTREAM to check which girl route you'll get)
+- 0x06: get_2978(arg1). i.e. push_int(0x2978[arg1]);
+- 0x0c: get_2984(arg1). i.e. push_int(0x2984[arg1]);
+
+0x0d:
+- 10: LoadSNX
+- 11: CallSNX
+- 12: change window title + something?
+- 13: ???
+- 14: ???
+- 15: ???
+- 16: some crit sec thingies
+- 17: crit sec thingies too (code looks similar)
+- 18: LoadLayer
+- 19: LoadMaskLayer
+- 20: ???
+- 21: ???
+- 22: ???
+- 23: ???
+- 26: StartupGraphicsEffect
+- 29: ???
+- 30: ???
+- 31: ???
+- 32: ???
+- 33: ???
+- 34: ???
+- 35: ???
+- 36: ???
+- 37: ???
+- 38: ???
+- 39: ???
+- 40: ???
+- 41: ???
+- 42: ???
+- 43: ???
+- 44: ???
+- 45: ???
+- 46: ???
+- 47: ???
+- 49: ???
+- 50: ???
+- 52: ???
+- 54: ???
+- 55: ???
+- 56: ???
+- 57: ???
+- 58: ???
+- 59: ???
+- 61: ???
+- 62: ???
+- 63: ???
+- 64: ???
+- 65: ???
+- 66: ???
+- 74: ???
+- 75: ???
+- 77: ???
+- 80: ???
+- 81: ???
+- 86: ???
+- 87: ???
+- 88: ???
+- 89: ???
+- 90: ???
+- 91: ???
+- 94: ???
+- 119: ???
+- 126: ???
+- 129: ???
+
 
 runtime:
 param_1/this + 0x2948 = bytecode index
@@ -76,3 +148,27 @@ param_1/this + 0x2938 = bytecode size
 
 param_1/this + 0x1830 = stack index
 param_1/this + 0x30 + X * 8 = stack[X] (each value on the stack are a pair of int32, first one seems to be "type", second is the value)
+
+
+param_1/this + 0x294c = length of "xxxx1" = 32 (seems to contains some vars like the "girls' interests")
+param_1/this + 0x2950 = length of "xxxx2"
+param_1/this + 0x2954 = length of "xxxx3"
+param_1/this + 0x2958 = length of "xxxx4" = 393 is the max value I found in code
+param_1/this + 0x295c = length of "xxxx5"
+param_1/this + 0x2960 = length of "xxxx6"
+param_1/this + 0x2964 = length of "xxxx7" = 368 is the max value I found in code
+param_1/this + 0x2968 = length of "xxxx8"
+
+param_1/this + 0x296c = array "xxxx1" (1 bytes)
+param_1/this + 0x2970 = array "xxxx2" (1 byte)
+param_1/this + 0x2974 = array "xxxx3" (8 bytes)
+param_1/this + 0x2978 = array "xxxx4" (4 bytes)
+param_1/this + 0x297c = array "xxxx5" (1 byte)
+param_1/this + 0x2980 = array "xxxx6" (8 bytes)
+param_1/this + 0x2984 = array "xxxx7" (4 bytes)
+param_1/this + 0x2988 = array "xxxx8" (1 byte)
+
+known indices:
+0x296c[15] = agnes
+0x296c[16] = cleo
+0x296c[17] = sofie

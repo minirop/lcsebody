@@ -1,0 +1,30 @@
+call("COMMON")
+if ($CLEO > $SOFIE)
+{
+	if ($AGNES > $CLEO)
+	{
+		call("ANI")
+	}
+	else
+	{
+		if ($SOFIE > $CLEO)
+		{
+			call("SOF")
+		}
+		else
+		{
+			call("CRE")
+		}
+	}
+}
+else
+{
+	if ($AGNES > $SOFIE)
+	{
+		call("ANI")
+	}
+	else
+	{
+		call("SOF")
+	}
+}

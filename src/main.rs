@@ -61,6 +61,7 @@ fn main() -> Result<()> {
 
         print!("{:#04x} {:#04x} {:#04x}: ", opcode, arg1, arg2);
         match opcode {
+            0x00 => println!("destroy window"),
             0x01 => println!("add"),
             0x02 => println!("sub"),
             0x03 => println!("mul"),
@@ -80,8 +81,38 @@ fn main() -> Result<()> {
             },
             0x08 => println!("jump to {:?}", arg2),
             0x0A => println!("jump if true to {:?}", arg2),
+            0x0B => {
+                match arg1 {
+                    0x03 => print!("(this + 0x296c)[$STACK_TOP-1] = $STACK_TOP;"),
+                    0x04 => print!("(this + 0x2970)[$STACK_TOP-1] = ($STACK_TOP == 1);"),
+                    0x09 => print!("(this + 0x2984)[$STACK_TOP-1] = $STACK_TOP;"),
+                    _ => println!("<complicated things>;"),
+                };
+                println!(" push_int(1);");
+            },
             0x0C => println!("pop"),
-            0x0D => println!("push_int {}, return 2", arg1),
+            0x0D => {
+                match arg1 {
+                    0x01 => println!("destroy window"),
+                    0x02 => println!("return from script"),
+                    0x0A => println!("load script"),
+                    0x0B => println!("call script"),
+                    0x0C => println!("set window title"),
+                    0x12 => println!("LoadLayer"),
+                    0x13 => println!("LoadMaskLayer"),
+                    0x1A => println!("StartupGraphicsEffect"),
+                    _ => println!("unknown"),
+                };
+            },
+            0x0E => println!("return from script"),
+            0x0F => {
+                match arg2 {
+                    0x00 => println!("push_int((this + 0x296c)[{}]);", arg1),
+                    0x06 => println!("push_int((this + 0x2978)[{}]);", arg1),
+                    0x0C => println!("push_int((this + 0x2984)[{}]);", arg1),
+                    _ => println!("unknown"),
+                }
+            },
             0x11 => {
                 print!("push");
                 match arg1 {
@@ -92,6 +123,7 @@ fn main() -> Result<()> {
                 };
                 set.insert(arg2);
             },
+            0x14 | 0x15 => println!("noop"),
             _ => println!("unknown"),
         };
     }
