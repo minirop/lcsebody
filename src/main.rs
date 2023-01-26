@@ -80,13 +80,14 @@ fn main() -> Result<()> {
                 };
             },
             0x08 => println!("jump to {:?}", arg2),
+            0x09 => println!("jump if false to {:?}", arg2),
             0x0A => println!("jump if true to {:?}", arg2),
             0x0B => {
                 match arg1 {
                     0x03 => print!("(this + 0x296c)[$STACK_TOP-1] = $STACK_TOP;"),
                     0x04 => print!("(this + 0x2970)[$STACK_TOP-1] = ($STACK_TOP == 1);"),
                     0x09 => print!("(this + 0x2984)[$STACK_TOP-1] = $STACK_TOP;"),
-                    _ => println!("<complicated things>;"),
+                    _ => print!("<complicated things>;"),
                 };
                 println!(" push_int(1);");
             },
@@ -100,7 +101,12 @@ fn main() -> Result<()> {
                     0x0C => println!("set window title"),
                     0x12 => println!("LoadLayer"),
                     0x13 => println!("LoadMaskLayer"),
+                    0x14 => println!("SetLayerVisible"),
+                    0x15 => println!("SetLayerPosition"),
+                    0x16 => println!("CropLayer"),
                     0x1A => println!("StartupGraphicsEffect"),
+                    0x2C => println!("print dialogue"),
+                    0x4F => println!("show choices"),
                     _ => println!("unknown"),
                 };
             },
