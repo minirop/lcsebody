@@ -27,7 +27,7 @@ fn main() -> Result<()> {
     let count = f.read_i32::<LittleEndian>()?;
     //println!("count: {:?}", count);
     let _ = f.read_i32::<LittleEndian>()?;
-    //println!("unknown: {:?}", unknown);
+    //println!("space used by strings: {:?}", strings_space);
 
     let start = f.stream_position()?;
 
@@ -117,7 +117,14 @@ fn main() -> Result<()> {
                     0x06 => println!("push_int((this + 0x2978)[{}]);", arg1),
                     0x0C => println!("push_int((this + 0x2984)[{}]);", arg1),
                     _ => println!("unknown"),
-                }
+                };
+            },
+            0x10 => {
+                match arg2 {
+                    0x00 | 0x02 | 0x04 | 0x06 | 0x08 | 0x0a | 0x0c => println!("push_var({}, {});", (arg2 / 2) + 3, arg1),
+                    0x01 | 0x03 | 0x05 | 0x07 | 0x09 | 0x0b | 0x0d => println!("stack[stack_top].type = {}; stack[stack_top].value += {};", (arg2 / 2) + 3, arg1),
+                    _ => println!("unknown"),
+                };
             },
             0x11 => {
                 print!("push");

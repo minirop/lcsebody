@@ -20,15 +20,15 @@ opcodes:
 - 0x08 unconditional jump
 - 0x09 conditional jump if false (if (stack_top != 0) { if (arg1 != 0) push_bool(true) } else jump_to(arg2))
 - 0x0a conditional jump if true (if (stack_top != 0) jump_to(arg2) else if arg1 != 0 push_bool(true))
-- 0x0b ???
+- 0x0b set some variable
 - 0x0c pop stack
 - 0x0d push arg1 (of type int) then returns 2
 - 0x0e return 4
-- 0x0f ???
-- 0x10 ???
+- 0x0f push some variable on the stack
+- 0x10 (change stack top type, see below)
 - 0x11 push literal
-- 0x12 ???
-- 0x13 ???
+- 0x12 increment 0x296c if stack top type == 3 or 0x2984 if stack top type == 9 then push the incremented value on the stack (see FUN_00412460 below)
+- 0x13 like 0x12 but decrement
 - 0x14 do nothing?
 - 0x15 do nothing?
 - 0x17 push arg1 (of type int) then returns 3
@@ -39,14 +39,32 @@ opcodes:
 - 0x02 string
 
 0x0D seems to be "push_int" then execute action based on it. (since it returns 2 instead of continuing executing like 0x11)
-- 0x0B execute script
-- 0x12 set charater layer?
+- 0x0A LoadSNX (effect unknown, feels identical to 0x0B)
+- 0x0B CallSNX (execute script
+- 0x0C change window title + something?
+- 0x10 some crit sec thingies
+- 0x11 crit sec thingies too (code looks similar)
+- 0x12 LoadLayer (set image)
+- 0x13 LoadMaskLayer (mask layer with BW image)
+- 0x14 SetLayerVisible
+- 0x15 SetLayerPosition
+- 0x16 CropLayer (x, y, w, h), if w or h are < 0 then w or h of the layer is used? (seems only 0, 0, -1, -1 is ever used)
+- 0x1A StartupGraphicsEffect
 - 0x23 preceded by 3 "push_int" (200 or 255) so colour? which? text?
 - 0x24 preceded by 3 "push_int" (0 or 120) so colour? which? background?
 - 0x25 preceded by 2 "push_int" (0 then 1)
 - 0x2C set line as read
+- 0x30 play audio
 - 0x3A set button UI (used for dialogue box)
-- 0x4F seems to be choices (choices followed by an int: 4 = 2 choices, 5 = 3 choices)
+- 0x3C in _SB_ERASEMSGBUTTON
+- 0x4C in _SB_SKIPBUTTON
+- 0x4F choices (two ints, then choices, then number of args: 4 or 5)
+-- first int: unknown (some ID)
+-- second int: where to store the choice (array, index). "array" is where to store, e.g. 3 == 0x296c, and "index" the index in the array. most of the time it should be (3, 3) meaning 0x296c[3]
+- 0x53 in _SB_BACKLOGPREV
+- 0x54 in _SB_BACKLOGNEXT
+- 0x70 in _SB_REPLAYVOICE
+- 0x79 only in _SB_AUTOMODE so probably something like "toggle auto-mode"
 
 0x07 is CMP:
 - 0x00: EQ
@@ -60,7 +78,7 @@ opcodes:
 switch is based on arg2:
 - 0x00, 0x02, 0x04, 0x06, 0x08, 0x0a, 0x0c: push on top of the stack the value arg1 with a new type.
 - 0x01, 0x03, 0x05, 0x07, 0x09, 0x0b, 0x0d: replace stack and adding arg1 to the top of the stack.
-types are from 3 to 9. (i.e. "unknown")
+types are from 3 to 9. (i.e. from "xxxx1" to "xxxx7")
 
 0x09 && 0x0a:
 - why is there a "push_bool" in the "else" case? push the value that has been read/popped?
@@ -76,73 +94,6 @@ types are from 3 to 9. (i.e. "unknown")
 - 0x06: get_2978(arg1). i.e. push_int(0x2978[arg1]);
 - 0x0c: get_2984(arg1). i.e. push_int(0x2984[arg1]);
 
-0x0d:
-- 10: LoadSNX
-- 11: CallSNX
-- 12: change window title + something?
-- 13: ???
-- 14: ???
-- 15: ???
-- 16: some crit sec thingies
-- 17: crit sec thingies too (code looks similar)
-- 18: LoadLayer
-- 19: LoadMaskLayer
-- 20: SetLayerVisible
-- 21: SetLayerPosition
-- 22: CropLayer (x, y, w, h), if w or h are < 0 then w or h of the layer is used? (seems only 0, 0, -1, -1 is ever used)
-- 23: ???
-- 26: StartupGraphicsEffect
-- 29: ???
-- 30: ???
-- 31: ???
-- 32: ???
-- 33: ???
-- 34: ???
-- 35: ???
-- 36: ???
-- 37: ???
-- 38: ???
-- 39: ???
-- 40: ???
-- 41: ???
-- 42: ???
-- 43: ???
-- 44: ???
-- 45: ???
-- 46: ???
-- 47: ???
-- 49: ???
-- 50: ???
-- 52: ???
-- 54: ???
-- 55: ???
-- 56: ???
-- 57: ???
-- 58: ???
-- 59: ???
-- 61: ???
-- 62: ???
-- 63: ???
-- 64: ???
-- 65: ???
-- 66: ???
-- 74: ???
-- 75: ???
-- 77: ???
-- 80: ???
-- 81: ???
-- 86: ???
-- 87: ???
-- 88: ???
-- 89: ???
-- 90: ???
-- 91: ???
-- 94: ???
-- 119: ???
-- 126: ???
-- 129: ???
-
-
 runtime:
 param_1/this + 0x2948 = bytecode index
 param_1/this + 0x2940 + X * 0x0C = bytecode[X]
@@ -152,7 +103,7 @@ param_1/this + 0x1830 = stack index
 param_1/this + 0x30 + X * 8 = stack[X] (each value on the stack are a pair of int32, first one seems to be "type", second is the value)
 
 
-param_1/this + 0x294c = length of "xxxx1" = 32 (seems to contains some vars like the "girls' interests")
+param_1/this + 0x294c = length of "xxxx1" = 32
 param_1/this + 0x2950 = length of "xxxx2"
 param_1/this + 0x2954 = length of "xxxx3"
 param_1/this + 0x2958 = length of "xxxx4" = 393 is the max value I found in code
@@ -161,7 +112,7 @@ param_1/this + 0x2960 = length of "xxxx6"
 param_1/this + 0x2964 = length of "xxxx7" = 368 is the max value I found in code
 param_1/this + 0x2968 = length of "xxxx8"
 
-param_1/this + 0x296c = array "xxxx1" (4 bytes)
+param_1/this + 0x296c = array "xxxx1" (4 bytes) // variables
 param_1/this + 0x2970 = array "xxxx2" (1 byte)
 param_1/this + 0x2974 = array "xxxx3" (8 bytes)
 param_1/this + 0x2978 = array "xxxx4" (4 bytes) // feels like the layers (z-order?), since used by LoadLayer/LoadMaskLayer
@@ -173,14 +124,43 @@ param_1/this + 0x2988 = array "xxxx8" (1 byte)
 
 known indices:
 -- variables
+0x296c[3] = selected choice
 0x296c[15] = agnes
 0x296c[16] = cleo
 0x296c[17] = sofie
 
--- layers
+-- IDs
+0x2978[6/7] = unused (used by "set layer visible" but always "false")
 0x2978[8/9/10] = characters
+0x2978[11] = UI of menus (e.g. "_O_CM_01CHIP")
 0x2978[12] = background
+0x2978[15] = bgm
+0x2978[16] = se
+0x2978[20] = UI of the settings menu (right click) "_RCMENUCHIP"
 0x2978[23] = text
+// known y-positions
+// Agnes
+0x2978[95] = 181;
+0x2978[100] = 136;
+0x2978[105] = 247;
+// Cleo
+0x2978[108] = 3;
+0x2978[110] = 238;
+0x2978[113] = -13;
+0x2978[120] = 222;
+// Sofie
+0x2978[126] = 477;
+0x2978[136] = 490;
+// Uru
+0x2978[138] = 65;
+0x2978[143] = 46;
+0x2978[144] = 116;
+// Nia
+0x2978[151] = 503;
+0x2978[152] = 433;
+
+-- ???
+0x2984[1] = Display Effects
 
 
 layer objects have a size of 0x38 bytes:
@@ -192,3 +172,26 @@ layer objects have a size of 0x38 bytes:
 0x14 = y-crop
 0x18 = w-crop
 0x1C = h-crop
+
+
+int FUN_00412460()
+{
+  int type = stack[stack_index][0];
+  int value = stack[stack_index][1];
+  stack_index -= 1;
+
+  if (type == 3) {
+    0x296c[value] += 1;
+    array_ptr = 0x296c;
+  }
+  else if (type == 9) {
+    0x2984[value] += 1;
+    array_ptr = 0x2984;
+  }
+  uVar3 = array_ptr[value];
+
+  stack_index += 1;
+  stack[iVar4][0] = 0;
+  stack[iVar4][1] = uVar3;
+  return 0;
+}
