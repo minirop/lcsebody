@@ -18,9 +18,9 @@ opcodes:
 - 0x06 neg int (stack)
 - 0x07 cmp
 - 0x08 unconditional jump
-- 0x09 conditional jump if false (if (stack_top != 0) { if (arg1 != 0) push_bool(true) } else jump_to(arg2))
-- 0x0a conditional jump if true (if (stack_top != 0) jump_to(arg2) else if arg1 != 0 push_bool(true))
-- 0x0b set some variable
+- 0x09 conditional jump if true (if (stack_top != 0) jump_to(arg2) else if arg1 != 0 push_bool(true))
+- 0x0a conditional jump if false (if (stack_top != 0) { if (arg1 != 0) push_bool(true) } else jump_to(arg2))
+- 0x0b where to store then value to store
 - 0x0c pop stack
 - 0x0d push arg1 (of type int) then returns 2
 - 0x0e return 4
@@ -29,8 +29,7 @@ opcodes:
 - 0x11 push literal
 - 0x12 increment 0x296c if stack top type == 3 or 0x2984 if stack top type == 9 then push the incremented value on the stack (see FUN_00412460 below)
 - 0x13 like 0x12 but decrement
-- 0x14 do nothing?
-- 0x15 do nothing?
+- 0x15 do nothing? arg1 is starting at 0 and incrementing by one each time (per file)
 - 0x17 push arg1 (of type int) then returns 3
 
 0x11 is "push <type> <value>"
@@ -40,8 +39,11 @@ opcodes:
 
 0x0D seems to be "push_int" then execute action based on it. (since it returns 2 instead of continuing executing like 0x11)
 - 0x0A LoadSNX (effect unknown, feels identical to 0x0B)
-- 0x0B CallSNX (execute script
+- 0x0B CallSNX (execute script)
 - 0x0C change window title + something?
+- 0x0D empty. execute effects? or "wait end of effect"?
+- 0x0E wait for stack_top ms not skippable
+- 0x0F wait for stack_top ms but skippable with mouse click
 - 0x10 some crit sec thingies
 - 0x11 crit sec thingies too (code looks similar)
 - 0x12 LoadLayer (set image)
@@ -50,21 +52,47 @@ opcodes:
 - 0x15 SetLayerPosition
 - 0x16 CropLayer (x, y, w, h), if w or h are < 0 then w or h of the layer is used? (seems only 0, 0, -1, -1 is ever used)
 - 0x1A StartupGraphicsEffect
-- 0x23 preceded by 3 "push_int" (200 or 255) so colour? which? text?
-- 0x24 preceded by 3 "push_int" (0 or 120) so colour? which? background?
-- 0x25 preceded by 2 "push_int" (0 then 1)
+- 0x1E set text font and size
+- 0x1F set 3 unknown bools on text
+- 0x20 set an unknown bool on text
+- 0x21 set an unknown bool on text
+- 0x22 set an unknown bool on text
+- 0x23 set text colour?
+- 0x24 set text outline colour?
+- 0x25 preceded by 2 "push_int" (0 then 1) on text
+- 0x26 seems to set text box (2 times with sometimes different sizes, why?)
+- 0x27 set int on text
+- 0x28 set bool on text
+- 0x29 set bool on text
+- 0x2A set bool on text
+- 0x2B set int on text
 - 0x2C set line as read
 - 0x30 play audio
+- 0x34 set int on text
 - 0x3A set button UI (used for dialogue box)
 - 0x3C in _SB_ERASEMSGBUTTON
+- 0x4B set 2 ints on text
 - 0x4C in _SB_SKIPBUTTON
 - 0x4F choices (two ints, then choices, then number of args: 4 or 5)
 -- first int: unknown (some ID)
 -- second int: where to store the choice (array, index). "array" is where to store, e.g. 3 == 0x296c, and "index" the index in the array. most of the time it should be (3, 3) meaning 0x296c[3]
+- 0x50 set int on text
+- 0x56 push bool???
+- 0x52 in _SB_BACKLOGMODE (probably "open backlog")
 - 0x53 in _SB_BACKLOGPREV
 - 0x54 in _SB_BACKLOGNEXT
 - 0x70 in _SB_REPLAYVOICE
 - 0x79 only in _SB_AUTOMODE so probably something like "toggle auto-mode"
+- 0x81 on text
+
+StartupGraphicsEffect's args:
+- args count
+- if 1
+-- unknown int (always -1 it seems), used for character moving horizontally (do it immediately?)
+- if 3
+-- unknown (always false it seems)
+-- 12 for fade out/cross fade?, 24 for fade in (see INIT), 40 for _bk_title, 32 for title UI (fade in and fade out)?, 16 cross fade? (used ingame for characters)
+-- unknown int (always 0 it seems)
 
 0x07 is CMP:
 - 0x00: EQ
@@ -112,56 +140,61 @@ param_1/this + 0x2960 = length of "xxxx6"
 param_1/this + 0x2964 = length of "xxxx7" = 368 is the max value I found in code
 param_1/this + 0x2968 = length of "xxxx8"
 
-param_1/this + 0x296c = array "xxxx1" (4 bytes) // variables
-param_1/this + 0x2970 = array "xxxx2" (1 byte)
-param_1/this + 0x2974 = array "xxxx3" (8 bytes)
-param_1/this + 0x2978 = array "xxxx4" (4 bytes) // feels like the layers (z-order?), since used by LoadLayer/LoadMaskLayer
-param_1/this + 0x297c = array "xxxx5" (1 byte)
-param_1/this + 0x2980 = array "xxxx6" (8 bytes)
-param_1/this + 0x2984 = array "xxxx7" (4 bytes)
+param_1/this + 0x296c = array "xxxx1" (4 bytes) 3 // variables
+param_1/this + 0x2970 = array "xxxx2" (1 byte)  4
+param_1/this + 0x2974 = array "xxxx3" (8 bytes) 5
+param_1/this + 0x2978 = array "xxxx4" (4 bytes) 6 // IDs?
+param_1/this + 0x297c = array "xxxx5" (1 byte)  7
+param_1/this + 0x2980 = array "xxxx6" (8 bytes) 8
+param_1/this + 0x2984 = array "xxxx7" (4 bytes) 9
 param_1/this + 0x2988 = array "xxxx8" (1 byte)
 
 
 known indices:
 -- variables
 0x296c[3] = selected choice
-0x296c[15] = agnes
-0x296c[16] = cleo
-0x296c[17] = sofie
+0x296c[6] = speech bubble x position (in "ONPU")
+0x296c[7] = speech bubble y position (in "ONPU")
+0x296c[8] = annoying mark x position (in "MUKA")
+0x296c[9] = annoying mark y position (in "MUKA")
+0x296c[10] = sweat drop x position (in "ASE")
+0x296c[11] = sweat drop y position (in "ASE")
+0x296c[15] = agnes' progress
+0x296c[16] = cleo's progress
+0x296c[17] = sofie's progress
 
--- IDs
-0x2978[6/7] = unused (used by "set layer visible" but always "false")
+-- IDs?
+0x2978[3] = dialogue box
+0x2978[6/7] = used by effects (like sweat drop in "ASE")
 0x2978[8/9/10] = characters
 0x2978[11] = UI of menus (e.g. "_O_CM_01CHIP")
 0x2978[12] = background
 0x2978[15] = bgm
 0x2978[16] = se
 0x2978[20] = UI of the settings menu (right click) "_RCMENUCHIP"
-0x2978[23] = text
-// known y-positions
-// Agnes
-0x2978[95] = 181;
-0x2978[100] = 136;
-0x2978[105] = 247;
-// Cleo
-0x2978[108] = 3;
-0x2978[110] = 238;
-0x2978[113] = -13;
-0x2978[120] = 222;
-// Sofie
-0x2978[126] = 477;
-0x2978[136] = 490;
-// Uru
-0x2978[138] = 65;
-0x2978[143] = 46;
-0x2978[144] = 116;
-// Nia
-0x2978[151] = 503;
-0x2978[152] = 433;
+0x2978[21] = BackgroundI of the settings menu (right click) "_RCMENUBK"
+0x2978[23] = dialogue text
+0x2978[24] = text 2?
+0x2978[25] = text 3?
+0x2978[35] = dialogue box button "_SB_EraseMsgButton"
+0x2978[36] = dialogue box button "_SB_SkipButton"
+0x2978[37] = dialogue box button "_SB_BackLogMode"
+0x2978[38] = dialogue box button "_SB_AutoMode"
+0x2978[39] = dialogue box button "_SB_ReplayVoice"
+0x2978[40] = history button "_SB_BackLogPrev"
+0x2978[41] = history button "_SB_BackLogNext"
+0x2978[93-107] = Agnes' y-positions
+0x2978[108-122] = Cleo's y-positions
+0x2978[123-137] = Sofie's y-positions
+0x2978[138-147] = Uru's y-positions
+0x2978[148-157] = Nia's y-positions
+0x2978[158-167] = Waka's y-positions
+0x2978[168-177] = Anzu's y-positions
 
 -- ???
+0x2984[0] = Windowed/Fullscreen
 0x2984[1] = Display Effects
-
+0x2984[4] = Message Skip
 
 layer objects have a size of 0x38 bytes:
 0x00 = ??

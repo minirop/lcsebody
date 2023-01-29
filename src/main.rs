@@ -80,8 +80,8 @@ fn main() -> Result<()> {
                 };
             },
             0x08 => println!("jump to {:?}", arg2),
-            0x09 => println!("jump if false to {:?}", arg2),
-            0x0A => println!("jump if true to {:?}", arg2),
+            0x09 => println!("jump if true to {:?}", arg2),
+            0x0A => println!("jump if false to {:?}", arg2),
             0x0B => {
                 match arg1 {
                     0x03 => print!("(this + 0x296c)[$STACK_TOP-1] = $STACK_TOP;"),
