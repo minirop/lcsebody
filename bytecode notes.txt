@@ -73,6 +73,7 @@ opcodes:
 - 0x3C in _SB_ERASEMSGBUTTON
 - 0x4B set 2 ints on text
 - 0x4C in _SB_SKIPBUTTON
+- 0x4D show dialogue boxes (1 = yes/no, 0 = ok)
 - 0x4F choices (two ints, then choices, then number of args: 4 or 5)
 -- first int: unknown (some ID)
 -- second int: where to store the choice (array, index). "array" is where to store, e.g. 3 == 0x296c, and "index" the index in the array. most of the time it should be (3, 3) meaning 0x296c[3]

@@ -106,6 +106,7 @@ fn main() -> Result<()> {
                     0x16 => println!("CropLayer"),
                     0x1A => println!("StartupGraphicsEffect"),
                     0x2C => println!("print dialogue"),
+                    0x4D => println!("show dialogue box (ok or yes/no)"),
                     0x4F => println!("show choices"),
                     _ => println!("unknown"),
                 };
@@ -114,8 +115,10 @@ fn main() -> Result<()> {
             0x0F => {
                 match arg2 {
                     0x00 => println!("push_int((this + 0x296c)[{}]);", arg1),
+                    0x02 => println!("push_bool((this + 0x2970)[{}]);", arg1),
                     0x06 => println!("push_int((this + 0x2978)[{}]);", arg1),
                     0x0C => println!("push_int((this + 0x2984)[{}]);", arg1),
+                    0x0D => println!("push_int((this + 0x2984)[pop() + {}]);", arg1),
                     _ => println!("unknown"),
                 };
             },
