@@ -18,8 +18,8 @@ opcodes:
 - 0x06 neg int (stack)
 - 0x07 cmp
 - 0x08 unconditional jump
-- 0x09 conditional jump if true (if (stack_top != 0) jump_to(arg2) else if arg1 != 0 push_bool(true))
-- 0x0a conditional jump if false (if (stack_top != 0) { if (arg1 != 0) push_bool(true) } else jump_to(arg2))
+- 0x09 conditional jump if true: if stack_top { if arg1 != 0 { push_bool(true)) } jump_to(arg2) }
+- 0x0a conditional jump if false if !stack_top { if arg1 != 0 { push_bool(true)) } jump_to(arg2) }
 - 0x0b where to store then value to store
 - 0x0c pop stack
 - 0x0d push arg1 (of type int) then returns 2
@@ -153,6 +153,7 @@ param_1/this + 0x2988 = array "xxxx8" (1 byte)
 
 known indices:
 -- variables
+0x296c[2] = clicked button (0 = new game, 1 = load, 2 = _OKM, 3 = _OCM, 4 = _OMM, 5 = HAREMU, 6 = quit game)
 0x296c[3] = selected choice
 0x296c[6] = speech bubble x position (in "ONPU")
 0x296c[7] = speech bubble y position (in "ONPU")
