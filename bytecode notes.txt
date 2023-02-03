@@ -75,13 +75,14 @@ opcodes:
 - 0x4C in _SB_SKIPBUTTON
 - 0x4D show dialogue boxes (1 = yes/no, 0 = ok)
 - 0x4F choices (two ints, then choices, then number of args: 4 or 5)
--- first int: unknown (some ID)
+-- first int: text ID
 -- second int: where to store the choice (array, index). "array" is where to store, e.g. 3 == 0x296c, and "index" the index in the array. most of the time it should be (3, 3) meaning 0x296c[3]
 - 0x50 set int on text
 - 0x56 push bool???
 - 0x52 in _SB_BACKLOGMODE (probably "open backlog")
 - 0x53 in _SB_BACKLOGPREV
 - 0x54 in _SB_BACKLOGNEXT
+- 0x6A seems to be "remove all buttons from layer"
 - 0x70 in _SB_REPLAYVOICE
 - 0x79 only in _SB_AUTOMODE so probably something like "toggle auto-mode"
 - 0x81 on text
@@ -143,7 +144,7 @@ param_1/this + 0x2968 = length of "xxxx8"
 
 param_1/this + 0x296c = array "xxxx1" (4 bytes) 3 // variables
 param_1/this + 0x2970 = array "xxxx2" (1 byte)  4
-param_1/this + 0x2974 = array "xxxx3" (8 bytes) 5
+param_1/this + 0x2974 = array "xxxx3" (8 bytes) 5 // pointers
 param_1/this + 0x2978 = array "xxxx4" (4 bytes) 6 // IDs?
 param_1/this + 0x297c = array "xxxx5" (1 byte)  7
 param_1/this + 0x2980 = array "xxxx6" (8 bytes) 8

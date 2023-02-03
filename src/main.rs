@@ -26,7 +26,7 @@ fn main() -> Result<()> {
 
     let count = f.read_i32::<LittleEndian>()?;
     //println!("count: {:?}", count);
-    let _ = f.read_i32::<LittleEndian>()?;
+    let _strings_space = f.read_i32::<LittleEndian>()?;
     //println!("space used by strings: {:?}", strings_space);
 
     let start = f.stream_position()?;
@@ -86,8 +86,9 @@ fn main() -> Result<()> {
                 match arg1 {
                     0x03 => print!("(this + 0x296c)[$STACK_TOP-1] = $STACK_TOP;"),
                     0x04 => print!("(this + 0x2970)[$STACK_TOP-1] = ($STACK_TOP == 1);"),
+                    0x05 => print!("<complicated things>;"),
                     0x09 => print!("(this + 0x2984)[$STACK_TOP-1] = $STACK_TOP;"),
-                    _ => print!("<complicated things>;"),
+                    _ => println!("unknown/is error"),
                 };
                 println!(" push_int(1);");
             },
@@ -106,7 +107,7 @@ fn main() -> Result<()> {
                     0x16 => println!("CropLayer"),
                     0x1A => println!("StartupGraphicsEffect"),
                     0x2C => println!("print dialogue"),
-                    0x4D => println!("show dialogue box (ok or yes/no)"),
+                    0x4D => println!("show dialogue box (0: ok or 1: yes/no)"),
                     0x4F => println!("show choices"),
                     _ => println!("unknown"),
                 };
