@@ -9,5 +9,11 @@ SAVE__.LCS:
 SAVExx.LCS:
 
 a fully fledge PNG file
-unknown bytes, probably the layers, the current music, etc.
-(key for the unknown bytes is simply 0x00 to 0xFE repeated)
+bytes (key is simply 0x00 to 0xFE repeating)
+- 0x1c20: script stack starts
+-- each script is 0x88 bytes
+-- 0x00: name of the script
+-- 0x80: position in the script
+- 0x48a0: current displayed string
+- 0x6338: start of history log? each entry is 0x688 bytes
+-- until 0x0000019A?

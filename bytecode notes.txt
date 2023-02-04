@@ -38,8 +38,8 @@ opcodes:
 - 0x02 string
 
 0x0D seems to be "push_int" then execute action based on it. (since it returns 2 instead of continuing executing like 0x11)
-- 0x0A LoadSNX (effect unknown, feels identical to 0x0B)
-- 0x0B CallSNX (execute script)
+- 0x0A LoadSNX (clear existing script then push script on the stack)
+- 0x0B CallSNX (push script on the stack)
 - 0x0C change window title + something?
 - 0x0D empty. execute effects? or "wait end of effect"?
 - 0x0E wait for stack_top ms not skippable
