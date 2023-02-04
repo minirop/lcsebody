@@ -1,7 +1,7 @@
 GAME USED: Harem Party by MangaGamer
 
 number of opcodes (each opcode is 12 bytes)
-unknown 4b
+space taken by strings
 opcodes (count * 12): opcode arg1 arg2
 strings (4b length counting the '\0' then 0-terminated string)
 name "dialogue" are separated by 0x01
@@ -19,7 +19,7 @@ opcodes:
 - 0x07 cmp
 - 0x08 unconditional jump
 - 0x09 conditional jump if true: if stack_top { if arg1 != 0 { push_bool(true)) } jump_to(arg2) }
-- 0x0a conditional jump if false if !stack_top { if arg1 != 0 { push_bool(true)) } jump_to(arg2) }
+- 0x0a conditional jump if false if !stack_top { if arg1 != 0 { push_bool(false)) } jump_to(arg2) }
 - 0x0b where to store then value to store
 - 0x0c pop stack
 - 0x0d push arg1 (of type int) then returns 2

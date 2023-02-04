@@ -5,7 +5,6 @@ extern crate encoding_rs;
 use encoding_rs::SHIFT_JIS;
 
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::Seek;
 use std::io::SeekFrom;
@@ -52,8 +51,6 @@ fn main() -> Result<()> {
 
     f.seek(SeekFrom::Start(start))?;
 
-    let mut set = HashSet::new();
-
     for _ in 0..count {
         let opcode = f.read_u32::<LittleEndian>()?;
         let arg1 = f.read_u32::<LittleEndian>()?;
@@ -88,7 +85,7 @@ fn main() -> Result<()> {
                     0x04 => print!("(this + 0x2970)[$STACK_TOP-1] = ($STACK_TOP == 1);"),
                     0x05 => print!("<complicated things>;"),
                     0x09 => print!("(this + 0x2984)[$STACK_TOP-1] = $STACK_TOP;"),
-                    _ => println!("unknown/is error"),
+                    _ => print!("unknown"),
                 };
                 println!(" push_int(1);");
             },
@@ -142,14 +139,13 @@ fn main() -> Result<()> {
                 };
             },
             0x11 => {
-                print!("push");
+                print!("push_");
                 match arg1 {
-                    0x00 => println!("_int {}", arg2),
-                    0x01 => println!("_bool {}", if arg2 == 1 { "true" } else { "false" }),
-                    0x02 => println!("_string {:?}", strings[&(arg2 as u64)]),
+                    0x00 => println!("int {}", arg2),
+                    0x01 => println!("bool {}", if arg2 == 1 { "true" } else { "false" }),
+                    0x02 => println!("string {:?}", strings[&(arg2 as u64)]),
                     _ => panic!("unknown push: {:?}", arg1),
                 };
-                set.insert(arg2);
             },
             0x14 | 0x15 => println!("noop"),
             _ => println!("unknown"),
