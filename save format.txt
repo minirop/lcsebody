@@ -10,6 +10,10 @@ SAVExx.LCS:
 
 a fully fledge PNG file
 bytes (key is simply 0x00 to 0xFE repeating)
+- 0x0000: size (including itself)
+- 0x0004: "DEFAULTVERSION\0\0"
+- 0x0014: 0x00
+- 0x0015: game's directory followed by the save time and date (which are shown on the load screen)
 - 0x1c20: script stack starts
 -- each script is 0x88 bytes
 -- 0x00: name of the script
@@ -17,3 +21,5 @@ bytes (key is simply 0x00 to 0xFE repeating)
 - 0x48a0: current displayed string
 - 0x6338: start of history log? each entry is 0x688 bytes
 -- until 0x0000019A?
+
+contains a lot of random data, duplicates and blank spaces. Maybe it's kind of a memory dump?
