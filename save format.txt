@@ -10,3 +10,4 @@ SAVExx.LCS:
 
 a fully fledge PNG file
 unknown bytes, probably the layers, the current music, etc.
+(key for the unknown bytes is simply 0x00 to 0xFE repeated)
