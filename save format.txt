@@ -1,0 +1,12 @@
+SAVE__.LCS:
+
+16 bytes: "DEFAULTVERSION\0\0"
+369 random 4-byte integers (they are changed everytime the game saves)
+369 integers which you have to ^ with the random integers. the first 10 or so contains the settings (text speed, bgm vol., etc.)
+23666 random bytes.
+23666 bytes that contains which lines have been read.
+
+SAVExx.LCS:
+
+a fully fledge PNG file
+unknown bytes, probably the layers, the current music, etc.
