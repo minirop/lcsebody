@@ -92,9 +92,16 @@ StartupGraphicsEffect's args:
 - if 1
 -- unknown int (always -1 it seems), used for character moving horizontally (do it immediately?)
 - if 3
--- unknown (always false it seems)
+-- unknown bool (always false it seems)
 -- 12 for fade out/cross fade?, 24 for fade in (see INIT), 40 for _bk_title, 32 for title UI (fade in and fade out)?, 16 cross fade? (used ingame for characters)
 -- unknown int (always 0 it seems)
+- if 4
+-- unknown bool (always false it seems)
+-- layer (0x2978[12])
+-- unknown int
+-- unknown int (always 1 it seem)
+
+seems to be: 1 = immediate, 3 = normal fade, 4 = background fade using mask in 0x2978[13]
 
 0x07 is CMP:
 - 0x00: EQ

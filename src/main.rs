@@ -14,18 +14,28 @@ use std::env;
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
-    let mut filename = String::from("scripts/ANI");
 
-    if args.len() == 2 {
-        filename = args[1].clone();
+    if args.len() < 2 {
+        panic!("Not enough args");
+    }
+
+    let filename = args[1].clone();
+
+    let mut decomp = false;
+    if args.len() == 3 {
+        if args[2] == "-d" {
+            decomp = true;
+        } else {
+            panic!("unknown argument: {}", args[2]);
+        }
     }
 
     let mut f = File::open(filename)?;
     let filesize = f.metadata()?.len();
 
-    let count = f.read_i32::<LittleEndian>()?;
+    let count = f.read_u32::<LittleEndian>()?;
     //println!("count: {:?}", count);
-    let _strings_space = f.read_i32::<LittleEndian>()?;
+    let _strings_space = f.read_u32::<LittleEndian>()?;
     //println!("space used by strings: {:?}", strings_space);
 
     let start = f.stream_position()?;
@@ -51,6 +61,16 @@ fn main() -> Result<()> {
 
     f.seek(SeekFrom::Start(start))?;
 
+    if decomp {
+        decompile(&mut f, count, &strings)?;
+    } else {
+        disassemble(&mut f, count, &strings)?;
+    }
+
+    Ok(())
+}
+
+fn disassemble(f: &mut File, count: u32, strings: &HashMap<u64, String>) -> Result<()> {
     for _ in 0..count {
         let opcode = f.read_u32::<LittleEndian>()?;
         let arg1 = f.read_u32::<LittleEndian>()?;
@@ -153,4 +173,161 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn decompile(f: &mut File, count: u32, strings: &HashMap<u64, String>) -> Result<()> {
+    let mut stack = vec![];
+    let mut gotoes: Vec<u32> = vec![];
+
+    for line in 0u32..count {
+        let opcode = f.read_u32::<LittleEndian>()?;
+        let arg1 = f.read_u32::<LittleEndian>()?;
+        let arg2 = f.read_u32::<LittleEndian>()?;
+
+        if gotoes.contains(&line) {
+            println!("L{:#04x}:", line);
+        }
+
+        match opcode {
+            0x00 => println!("destroy_window();"),
+            0x01 => print_binop(&mut stack, "+"),
+            0x02 => print_binop(&mut stack, "-"),
+            0x03 => print_binop(&mut stack, "*"),
+            0x04 => print_binop(&mut stack, "/"),
+            0x05 => print_binop(&mut stack, "%"),
+            0x06 => {
+                let val = get_arg(&mut stack);
+                stack.push(format!("-({})", val));
+            },
+            0x07 => {
+                match arg1 {
+                    0x00 => print_binop(&mut stack, "=="),
+                    0x01 => print_binop(&mut stack, "!="),
+                    0x02 => print_binop(&mut stack, "<"),
+                    0x03 => print_binop(&mut stack, "<="),
+                    0x04 => print_binop(&mut stack, ">"),
+                    0x05 => print_binop(&mut stack, ">="),
+                    _ => panic!("Unknown CMP arg: {}", arg1),
+                };
+            },
+            0x08 => {
+                gotoes.push(arg2);
+                println!("goto L{:#04x};", arg2);
+            },
+            0x09 => {
+                gotoes.push(arg2);
+                println!("if true {{ goto L{:#04x}; }}", arg2);
+            },
+            0x0A => {
+                gotoes.push(arg2);
+                println!("if false {{ goto L{:#04x}; }}", arg2);
+            },
+            0x0B => {
+                let value = get_arg(&mut stack);
+                let index = get_arg(&mut stack);
+                match arg1 {
+                    0x03 => println!("DAT_0x296c[{:?}] = {:?};", index, value),
+                    0x04 => println!("DAT_0x2970[{:?}] = ({:?} == 1);", index, value),
+                    0x05 => println!("<complicated things>;"),
+                    0x09 => println!("DAT_0x2984[{:?}] = ({:?} == 1);", index, value),
+                    _ => println!("unknown_0x0B_{:#04x}({:?}, {:?});", arg1, index, value),
+                };
+            },
+            0x0C => { stack.pop(); },
+            0x0D => {
+                match arg1 {
+                    0x01 => print!("destroy_window("),
+                    0x02 => print!("return("),
+                    0x0A => print!("load("),
+                    0x0B => print!("call("),
+                    0x0C => print!("set_window_title("),
+                    0x0E => print!("blocking_wait("),
+                    0x0F => print!("wait("),
+                    0x12 => print!("LoadLayer("),
+                    0x13 => print!("LoadMaskLayer("),
+                    0x14 => print!("SetLayerVisible("),
+                    0x15 => print!("SetLayerPosition("),
+                    0x16 => print!("CropLayer("),
+                    0x17 => print!("SetLayerId("),
+                    0x1A => print!("StartupGraphicsEffect("),
+                    0x1E => print!("set_font_size?("),
+                    0x26 => print!("set_textbox_size?("),
+                    0x2C => print!("print_dialogue("),
+                    0x30 => print!("play_audio("),
+                    0x3A => print!("create_dialogue_box_button("),
+                    0x44 => print!("create_menu("),
+                    0x45 => print!("wait_button_click("),
+                    0x4D => print!("show_dialogue_box("),
+                    0x4F => print!("show_choices("),
+                    0x5A => print!("create_blinking_cursor("),
+                    0x6A => print!("close_menu("),
+                    _ => print!("unknown_{:#04x}(", arg1),
+                };
+
+                print_args(&mut stack);
+
+                println!(");");
+
+                stack.push("0".to_string());
+            },
+            0x0E => println!("return();"),
+            0x0F => {
+                match arg2 {
+                    0x00 => stack.push(format!("DAT_0x296c[{}]", arg1)),
+                    0x02 => stack.push(format!("DAT_0x2970[{}]", arg1)),
+                    0x06 => stack.push(format!("DAT_0x2978[{}]", arg1)),
+                    0x0C => stack.push(format!("DAT_0x2984[{}]", arg1)),
+                    0x0D => {
+                        let val = get_arg(&mut stack);
+                        stack.push(format!("DAT_0x2984[{} + {}]", val, arg1));
+                    },
+                    _ => stack.push(format!("UNKNOWN_0x0F_{}[{}]", arg2, arg1)),
+                };
+            },
+            0x10 => {
+                match arg2 {
+                    0x00 | 0x02 | 0x04 | 0x06 | 0x08 | 0x0a | 0x0c => stack.push(format!("DAT_0x29{}[{}]", 0x6c + 4 * (arg2 / 2), arg1)),
+                    0x01 | 0x03 | 0x05 | 0x07 | 0x09 | 0x0b | 0x0d => println!("stack[stack_top].type = {}; stack[stack_top].value += {};", (arg2 / 2) + 3, arg1),
+                    _ => panic!("unknown 0x10"),
+                };
+            },
+            0x11 => {
+                match arg1 {
+                    0x00 => stack.push(format!("{}", arg2)),
+                    0x01 => stack.push(format!("{}", arg2 == 1)),
+                    0x02 => stack.push(format!("{:?}", strings[&(arg2 as u64)])),
+                    _ => panic!("unknown push: {:?}", arg1),
+                };
+            },
+            0x14 | 0x15 => {},
+            _ => println!("unknown_{:#04x}_{:#04x}_{:#04x}();", opcode, arg1, arg2),
+        };
+    }
+
+    Ok(())
+}
+
+fn print_binop(stack: &mut Vec<String>, op: &str) {
+    let left = get_arg(stack);
+    let right = get_arg(stack);
+    let ret = format!("{} {} {}", left, op, right);
+    stack.push(ret);
+}
+
+fn get_arg(stack: &mut Vec<String>) -> String {
+    stack.pop().unwrap()
+}
+
+fn print_args(stack: &mut Vec<String>) {
+    let mut first = true;
+    for val in stack.into_iter() {
+        if !first {
+            print!(", ");
+        }
+        print!("{}", val);
+
+        first = false;
+    }
+
+    stack.clear();
 }
